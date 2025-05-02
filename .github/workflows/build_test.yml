@@ -41,10 +41,7 @@ jobs:
         shell: bash
               
       - name: Install arm-none-eabi-gcc GNU Arm Embedded Toolchain
-        uses: carlosperate/arm-none-eabi-gcc-action@v1
-        
-      - name: Check arm-none-eabi-gcc Version
-        run: arm-none-eabi-gcc --version
+        uses: carlosperate/arm-none-eabi-gcc-action@main
         
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
