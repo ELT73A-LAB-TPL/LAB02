@@ -15,7 +15,6 @@ if "%PJT_NAME%"=="" (
 :: Display the stored project name
 echo Project name stored as: %PJT_NAME%
 
-
 :: Set the Documents path
 set "SCRIPT_PATH=%~dp0"
 set "SCRIPT_FILE=%SCRIPT_PATH%\LoadScript.txt"  :: Optional: Specify script file for -s, e.g., script.xml
@@ -59,14 +58,32 @@ if defined STM32CubeMX_PATH (
     set "STM32CUBEMX_PATH=%STM32CubeMX_PATH%\STM32CubeMX.exe"
 )
 
+set "DEFAULT_FLAG=N"
+set /p GC_FLAG="Generate Code? (Y/N, default is 'N'): "
+
+:: If input is empty, use default value
+if "%GC_FLAG%"=="" (
+    set "GC_FLAG=%DEFAULT_FLAG%"
+)
+
 :: Add project info
 copy /Y BaseScript.txt LoadScript.txt
 echo BaseScript.txt copied to LoadScript.txt successfully!
 echo project name %PJT_NAME% >> LoadScript.txt
 echo project toolchain "CMake" >> LoadScript.txt
 echo project path %SCRIPT_PATH% >> LoadScript.txt
-echo export script %SCRIPT_PATH%\LoadedScript.txt >> LoadScript.txt
-echo #project generate >> LoadScript.txt
+echo export script %SCRIPT_PATH%LoadedScript.txt >> LoadScript.txt
+
+:: Convert input to uppercase for consistency
+for %%A in (%GC_FLAG%) do set "GC_FLAG=%%A"
+
+if /i "%GC_FLAG%"=="Y" (
+    echo echo project generate >> LoadScript.txt
+) else if /i "%GC_FLAG%"=="N" (
+    echo #project generate >> LoadScript.txt
+) else (
+    echo Invalid entry. Please enter Y or N.
+)
 
 :: Run the command
 echo Running STM32CubeMX...
