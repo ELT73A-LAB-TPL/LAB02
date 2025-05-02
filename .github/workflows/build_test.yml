@@ -41,18 +41,23 @@ jobs:
         shell: bash
               
       - name: Install arm-none-eabi-gcc GNU Arm Embedded Toolchain
-        uses: carlosperate/arm-none-eabi-gcc-action@v1.9.1
-
-      - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@v3
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
         
+      - name: arm-none-eabi-gcc
+        run: arm-none-eabi-gcc --version
+        
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@master
+
+      - name: Check Ninja Version
+        run: ninja --version
+
       - name: Find All Folders and Configure CMake Build ${{env.BUILD_TYPE}}
         run: |
           for dir in */ ; do
             dir=${dir%/}  # Remove trailing slash
             if [ -f "$GITHUB_WORKSPACE/$dir/CMakeLists.txt" ]; then
               echo "Processing folder: $dir"
-              arm-none-eabi-gcc --version
               cmake -B "$GITHUB_WORKSPACE/$dir/build" -S "$GITHUB_WORKSPACE/$dir" -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}"
               cmake --build "$GITHUB_WORKSPACE/$dir/build" --config "${{ env.BUILD_TYPE }}"
             else
