@@ -43,14 +43,17 @@ jobs:
 
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@v3
-
+        
       - name: Find All Folders and Configure CMake Build ${{env.BUILD_TYPE}}
         run: |
           for dir in */ ; do
-            dir=${dir%/}  # Remove trailing slash for cleaner folder names
-            echo "Processing folder: $dir"            
-            cmake -B "$GITHUB_WORKSPACE/$dir/build" -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}"
-            cmake --build "$GITHUB_WORKSPACE/$dir/build" --config "${{ env.BUILD_TYPE }}"
+            dir=${dir%/}  # Remove trailing slash
+            if [ -f "$GITHUB_WORKSPACE/$dir/CMakeLists.txt" ]; then
+              echo "Processing folder: $dir"
+              cmake -B "$GITHUB_WORKSPACE/$dir/build" -S "$GITHUB_WORKSPACE/$dir" -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}"
+              cmake --build "$GITHUB_WORKSPACE/$dir/build" --config "${{ env.BUILD_TYPE }}"
+            else
+              echo "Skipping $dir (No CMakeLists.txt)"
+            fi
           done
-        shell: bash     
-  
+        shell: bash
