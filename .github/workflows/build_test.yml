@@ -29,15 +29,17 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
-      - name: Verify Folders Exist
+      - name: Verify Folders with CMakeLists.txt
         run: |
-          FOLDERS=$(ls -d */ 2>/dev/null || echo "")
+          FOLDERS=$(find . -mindepth 1 -maxdepth 1 -type d -exec test -e "{}/CMakeLists.txt" \; -print)      
           if [ -z "$FOLDERS" ]; then
-            echo "Error: No project folders found!"
+            echo "Error: No project folders with CMakeLists.txt found!"
             exit 1
-          fi
+          fi      
+          echo "Valid project folders found:"
+          echo "$FOLDERS"
         shell: bash
-        
+              
       - name: Install arm-none-eabi-gcc GNU Arm Embedded Toolchain
         uses: carlosperate/arm-none-eabi-gcc-action@v1.9.1
 
