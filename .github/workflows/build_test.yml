@@ -50,6 +50,7 @@ jobs:
             dir=${dir%/}  # Remove trailing slash
             if [ -f "$GITHUB_WORKSPACE/$dir/CMakeLists.txt" ]; then
               echo "Processing folder: $dir"
+              arm-none-eabi-gcc --version
               cmake -B "$GITHUB_WORKSPACE/$dir/build" -S "$GITHUB_WORKSPACE/$dir" -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}"
               cmake --build "$GITHUB_WORKSPACE/$dir/build" --config "${{ env.BUILD_TYPE }}"
             else
