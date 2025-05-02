@@ -1,14 +1,24 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-:: cd %STM32CubeMX_PATH%
-:: jre\bin\java -jar STM32CubeMX.exe –s LoadScript.txt
-:: jre\bin\java -jar STM32CubeMX.exe –q outputscript.txt
+:: Set Default Project Name
+set "DEFAULT_NAME=STM32F411CEUx_LAB02"
+
+:: Asks for Project Name
+set /p PJT_NAME="Enter a valid project name (or press Enter to use '%DEFAULT_NAME%'): "
+
+:: If input is empty, use the default name
+if "%PJT_NAME%"=="" (
+    set "PJT_NAME=%DEFAULT_NAME%"
+)
+
+:: Display the stored project name
+echo Project name stored as: %PJT_NAME%
+
 
 :: Set the Documents path
 set "SCRIPT_PATH=%~dp0"
 set "SCRIPT_FILE=%SCRIPT_PATH%\LoadScript.txt"  :: Optional: Specify script file for -s, e.g., script.xml
-set "PJT_NAME=STM32F411CEUx_LAB02"
 
 if defined STM32CubeMX_PATH (
     if exist "%STM32CubeMX_PATH%" (
@@ -55,7 +65,7 @@ echo BaseScript.txt copied to LoadScript.txt successfully!
 echo project name %PJT_NAME% >> LoadScript.txt
 echo project toolchain "CMake" >> LoadScript.txt
 echo project path %SCRIPT_PATH% >> LoadScript.txt
-echo export script %SCRIPT_PATH%\outputscript.txt >> LoadScript.txt
+echo export script %SCRIPT_PATH%\LoadedScript.txt >> LoadScript.txt
 echo #project generate >> LoadScript.txt
 
 :: Run the command
