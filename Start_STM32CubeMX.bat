@@ -78,7 +78,7 @@ echo export script %SCRIPT_PATH%LoadedScript.txt >> LoadScript.txt
 for %%A in (%GC_FLAG%) do set "GC_FLAG=%%A"
 
 if /i "%GC_FLAG%"=="Y" (
-    echo echo project generate >> LoadScript.txt
+    echo project generate >> LoadScript.txt
 ) else if /i "%GC_FLAG%"=="N" (
     echo #project generate >> LoadScript.txt
 ) else (
