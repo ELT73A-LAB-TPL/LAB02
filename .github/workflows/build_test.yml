@@ -47,9 +47,10 @@ jobs:
       - name: Find All Folders and Configure CMake Build ${{env.BUILD_TYPE}}
         run: |
           for dir in */ ; do
-            echo "Processing folder: $dir"
-            cmake -B "$GITHUB_WORKSPACE/build" -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}"
-            cmake --build "$GITHUB_WORKSPACE/build" --config "${{ env.BUILD_TYPE }}"
+            dir=${dir%/}  # Remove trailing slash for cleaner folder names
+            echo "Processing folder: $dir"            
+            cmake -B "$GITHUB_WORKSPACE/$dir/build" -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}"
+            cmake --build "$GITHUB_WORKSPACE/$dir/build" --config "${{ env.BUILD_TYPE }}"
           done
-        shell: bash        
+        shell: bash     
   
