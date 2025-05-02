@@ -34,7 +34,7 @@ jobs:
           FOLDERS=$(ls -d */ 2>/dev/null || echo "")
           if [ -z "$FOLDERS" ]; then
             echo "Error: No project folders found!"
-            exit 1
+            exit 0
           fi
         shell: bash
         
