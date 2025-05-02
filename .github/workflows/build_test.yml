@@ -43,14 +43,16 @@ jobs:
       - name: Install arm-none-eabi-gcc GNU Arm Embedded Toolchain
         uses: carlosperate/arm-none-eabi-gcc-action@v1
         
-      - name: arm-none-eabi-gcc
+      - name: Check arm-none-eabi-gcc Version
         run: arm-none-eabi-gcc --version
         
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
 
-      - name: Check Ninja Version
-        run: ninja --version
+      - name: Check arm-none-eabi-gcc and Ninja Version
+        run: |
+          arm-none-eabi-gcc --version
+          ninja --version
 
       - name: Find All Folders and Configure CMake Build ${{env.BUILD_TYPE}}
         run: |
