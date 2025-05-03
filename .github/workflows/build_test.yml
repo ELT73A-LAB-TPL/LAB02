@@ -47,12 +47,17 @@ jobs:
           ninja --version
           echo "::endgroup::"
 
-      - name: Configure and Build Projects
+      - name: Find All Folders and Configure CMake Build ${{env.BUILD_TYPE}}
         run: |
-          for dir in $FOLDERS; do
+          for dir in */ ; do
+            dir=${dir%/}  # Remove trailing slash
             echo "::group::Processing folder: $dir"
-            cmake -B "$GITHUB_WORKSPACE/$dir/build" -S "$GITHUB_WORKSPACE/$dir" -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}"
-            cmake --build "$GITHUB_WORKSPACE/$dir/build" --config "${{ env.BUILD_TYPE }}" -- -j$(nproc)
+            if [ -f "$GITHUB_WORKSPACE/$dir/CMakeLists.txt" ]; then              
+              cmake -B "$GITHUB_WORKSPACE/$dir/build" -S "$GITHUB_WORKSPACE/$dir" -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}"
+              cmake --build "$GITHUB_WORKSPACE/$dir/build" --config "${{ env.BUILD_TYPE }}"			        
+            else
+              echo "Skipping $dir (No CMakeLists.txt)"
+            fi
             echo "::endgroup::"
           done
         shell: bash
