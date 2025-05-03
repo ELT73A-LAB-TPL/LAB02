@@ -27,6 +27,13 @@ cmake_install.cmake
 Makefile
 compile_commands.json
 
+# Ignore Ninja build artifacts
+build/
+*.ninja
+.ninja_deps
+.ninja_log
+rules.ninja
+
 # Ignore VS Code settings and workspace files
 .vscode/
 *.code-workspace
