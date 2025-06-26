@@ -32,11 +32,17 @@ jobs:
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
 
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: 'latest' # Or 'latest'
+          
       - name: Check Tool Versions
         run: |
           echo "::group::Checking tool versions"
           arm-none-eabi-gcc --version
           ninja --version
+          cmake --version
           echo "::endgroup::"
 
       - name: Find All Folders and Configure CMake Build ${{env.BUILD_TYPE}}
