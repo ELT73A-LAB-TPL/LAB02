@@ -1,5 +1,8 @@
 # LAB02 template for ELT73A course 
-
+Opens STM32CubeMX with provided Project Name, Script Name and generate code
+```bash
+LoadMX BaseScript BaseScript.txt Y
+```
 ### Final Grading Summary and Score Calculation
 
 This section of the workflow is responsible for compiling the results from all individual configuration checks, presenting a clear grading report, calculating the total score, and determining the overall job status (pass/fail).
