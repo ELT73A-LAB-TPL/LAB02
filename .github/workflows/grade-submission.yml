@@ -1,0 +1,229 @@
+name: Grade Submission
+# This workflow parses git and development environment configuration files to extract and grade information.
+
+on: [push, workflow_dispatch]
+
+jobs:
+  get-config-info:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+   
+    - name: Read arm-config.txt and Extract Info
+      id: arm_info
+      run: |
+        ARM_CONFIG_FILE="arm-config.txt"
+
+        # Use -s (silent) and || true to prevent the step from failing if file is not found
+        # and ensure subsequent commands still run with potentially empty variables.
+        # This allows the grading step to handle the 'missing' state.
+        if [ -f "$ARM_CONFIG_FILE" ]; then
+          GIT_VERSION=$(grep -m 1 "git version" "$ARM_CONFIG_FILE" | awk '{print $3}')
+          GIT_USER_NAME=$(grep "user.name=" "$ARM_CONFIG_FILE" | awk -F'=' '{print $2}' | head -n 1)
+          GIT_USER_EMAIL=$(grep "user.email=" "$ARM_CONFIG_FILE" | awk -F'=' '{print $2}' | head -n 1)
+          GCC_VERSION=$(grep -m 1 "^arm-none-eabi-gcc (" "$ARM_CONFIG_FILE" | awk '{print $NF}')
+          CMAKE_VERSION=$(grep -m 1 "^cmake version" "$ARM_CONFIG_FILE" | awk '{print $3}')
+          GDB_VERSION=$(grep -m 1 "^GNU gdb" "$ARM_CONFIG_FILE" | awk '{print $4}')
+          STM32CLT_PATH=$(grep -m 1 "STM32CLT_PATH:" "$ARM_CONFIG_FILE" | sed 's/^[ \t]*//;s/[ \t]*$//' | awk -F': ' '{print $2}')
+          STM32CubeMX_PATH=$(grep -m 1 "STM32CubeMX_PATH:" "$ARM_CONFIG_FILE" | sed 's/^[ \t]*//;s/[ \t]*$//' | awk -F': ' '{print $2}')
+          VSCODE_EXTENSION_FULL=$(grep -m 1 "stmicroelectronics.stm32-vscode-extension@" "$ARM_CONFIG_FILE")
+        else
+          echo "::warning file=$ARM_CONFIG_FILE::ARM config file not found. Associated checks will fail."
+          GIT_VERSION=""
+          GIT_USER_NAME=""
+          GIT_USER_EMAIL=""
+          GCC_VERSION=""
+          CMAKE_VERSION=""
+          GDB_VERSION=""
+          STM32CLT_PATH=""
+          STM32CubeMX_PATH=""
+          VSCODE_EXTENSION_FULL=""
+        fi
+
+        echo "Git Version: $GIT_VERSION"
+        echo "git_version=$GIT_VERSION" >> "$GITHUB_OUTPUT"
+        echo "Git User Name: $GIT_USER_NAME"
+        echo "git_user_name=$GIT_USER_NAME" >> "$GITHUB_OUTPUT"
+        echo "Git User Email: $GIT_USER_EMAIL"
+        echo "git_user_email=$GIT_USER_EMAIL" >> "$GITHUB_OUTPUT"
+        echo "GCC Version: $GCC_VERSION"
+        echo "gcc_version=$GCC_VERSION" >> "$GITHUB_OUTPUT"
+        echo "CMake Version: $CMAKE_VERSION"
+        echo "cmake_version=$CMAKE_VERSION" >> "$GITHUB_OUTPUT"
+        echo "GDB Version: $GDB_VERSION"
+        echo "gdb_version=$GDB_VERSION" >> "$GITHUB_OUTPUT"
+        echo "STM32CLT Path: $STM32CLT_PATH"
+        echo "stm32clt_path=$STM32CLT_PATH" >> "$GITHUB_OUTPUT"
+        echo "STM32CubeMX Path: $STM32CubeMX_PATH"
+        echo "stm32cubemx_path=$STM32CubeMX_PATH" >> "$GITHUB_OUTPUT"
+        echo "VS Code Extension Full: $VSCODE_EXTENSION_FULL"
+        echo "vscode_extension_full=$VSCODE_EXTENSION_FULL" >> "$GITHUB_OUTPUT"
+
+        # Check if VS Code is installed and get its version
+
+    - name: Grade VS Code STM32 Extension
+      run: |
+        if [[ -n "${{ steps.arm_info.outputs.vscode_extension_full }}" ]]; then
+          echo "VS Code STM32 Extension Version Found: PASS"
+          echo "vscode_extension_status=PASS" >> "$GITHUB_OUTPUT"
+        else
+          echo "VS Code STM32 Extension Version Not Found: FAIL"
+          echo "vscode_extension_status=FAIL" >> "$GITHUB_OUTPUT"
+        fi
+      id: grade_vscode_extension
+
+    - name: Grade STM32CLT Path
+      run: |
+        if [[ -n "${{ steps.arm_info.outputs.stm32clt_path }}" ]]; then
+          echo "STM32CLT Path Found: PASS"
+          echo "stm32clt_path_status=PASS" >> "$GITHUB_OUTPUT"
+        else
+          echo "STM32CLT Path Not Found: FAIL"
+          echo "stm32clt_path_status=FAIL" >> "$GITHUB_OUTPUT"
+        fi
+      id: grade_stm32clt_path
+
+    - name: Grade STM32CubeMX Path
+      run: |
+        if [[ -n "${{ steps.arm_info.outputs.stm32cubemx_path }}" ]]; then
+          echo "STM32CubeMX Path Found: PASS"
+          echo "stm32cubemx_path_status=PASS" >> "$GITHUB_OUTPUT"
+        else
+          echo "STM32CubeMX Path Not Found: FAIL"
+          echo "stm32cubemx_path_status=FAIL" >> "$GITHUB_OUTPUT"
+        fi
+      id: grade_stm32cubemx_path
+
+
+    - name: Grade Git Version
+      run: |
+        if [[ -n "${{ steps.arm_info.outputs.git_version }}" ]]; then
+          echo "Git Version Found: PASS"
+          echo "git_version_status=PASS" >> "$GITHUB_OUTPUT"
+        else
+          echo "Git Version Not Found: FAIL"
+          echo "git_version_status=FAIL" >> "$GITHUB_OUTPUT"
+        fi
+      id: grade_git_version
+
+    - name: Grade User Name
+      run: |
+        if [[ -n "${{ steps.arm_info.outputs.git_user_name }}" ]]; then
+          echo "User Name Found: PASS"
+          echo "user_name_status=PASS" >> "$GITHUB_OUTPUT"
+        else
+          echo "User Name Not Found: FAIL"
+          echo "user_name_status=FAIL" >> "$GITHUB_OUTPUT"
+        fi
+      id: grade_user_name
+
+    - name: Grade User Email
+      run: |
+        if [[ -n "${{ steps.arm_info.outputs.git_user_email }}" ]]; then
+          echo "User Email Found: PASS"
+          echo "user_email_status=PASS" >> "$GITHUB_OUTPUT"
+        else
+          echo "User Email Not Found: FAIL"
+          echo "user_email_status=FAIL" >> "$GITHUB_OUTPUT"
+        fi
+      id: grade_user_email
+
+    - name: Grade GCC Version
+      run: |
+        if [[ -n "${{ steps.arm_info.outputs.gcc_version }}" ]]; then
+          echo "GCC Version Found: PASS"
+          echo "gcc_version_status=PASS" >> "$GITHUB_OUTPUT"
+        else
+          echo "GCC Version Not Found: FAIL"
+          echo "gcc_version_status=FAIL" >> "$GITHUB_OUTPUT"
+        fi
+      id: grade_gcc_version
+
+    - name: Grade CMake Version
+      run: |
+        if [[ -n "${{ steps.arm_info.outputs.cmake_version }}" ]]; then
+          echo "CMake Version Found: PASS"
+          echo "cmake_version_status=PASS" >> "$GITHUB_OUTPUT"
+        else
+          echo "CMake Version Not Found: FAIL"
+          echo "cmake_version_status=FAIL" >> "$GITHUB_OUTPUT"
+        fi
+      id: grade_cmake_version
+
+    - name: Grade GDB Version
+      run: |
+        if [[ -n "${{ steps.arm_info.outputs.gdb_version }}" ]]; then
+          echo "GDB Version Found: PASS"
+          echo "gdb_version_status=PASS" >> "$GITHUB_OUTPUT"
+        else
+          echo "GDB Version Not Found: FAIL"
+          echo "gdb_version_status=FAIL" >> "$GITHUB_OUTPUT"
+        fi
+      id: grade_gdb_version
+
+
+    - name: Final Grading Summary and Score Calculation
+      run: |
+        TOTAL_SCORE=0
+
+        echo "--- Grading Report ---"
+        echo "Git Version Status: ${{ steps.grade_git_version.outputs.git_version_status }}"
+        if [[ "${{ steps.grade_git_version.outputs.git_version_status }}" == "PASS" ]]; then
+          TOTAL_SCORE=$((TOTAL_SCORE + 5))
+        fi
+        echo "User Name Status: ${{ steps.grade_user_name.outputs.user_name_status }}"
+        if [[ "${{ steps.grade_user_name.outputs.user_name_status }}" == "PASS" ]]; then
+          TOTAL_SCORE=$((TOTAL_SCORE + 5))
+        fi
+        echo "User Email Status: ${{ steps.grade_user_email.outputs.user_email_status }}"
+        if [[ "${{ steps.grade_user_email.outputs.user_email_status }}" == "PASS" ]]; then
+          TOTAL_SCORE=$((TOTAL_SCORE + 5))
+        fi
+        echo "GCC Version Status: ${{ steps.grade_gcc_version.outputs.gcc_version_status }}"
+        if [[ "${{ steps.grade_gcc_version.outputs.gcc_version_status }}" == "PASS" ]]; then
+          TOTAL_SCORE=$((TOTAL_SCORE + 15))
+        fi
+        echo "CMake Version Status: ${{ steps.grade_cmake_version.outputs.cmake_version_status }}"
+        if [[ "${{ steps.grade_cmake_version.outputs.cmake_version_status }}" == "PASS" ]]; then
+          TOTAL_SCORE=$((TOTAL_SCORE + 10))
+        fi
+        echo "GDB Version Status: ${{ steps.grade_gdb_version.outputs.gdb_version_status }}"
+        if [[ "${{ steps.grade_gdb_version.outputs.gdb_version_status }}" == "PASS" ]]; then
+          TOTAL_SCORE=$((TOTAL_SCORE + 10))
+        fi
+        echo "STM32CLT Path Status: ${{ steps.grade_stm32clt_path.outputs.stm32clt_path_status }}"
+        if [[ "${{ steps.grade_stm32clt_path.outputs.stm32clt_path_status }}" == "PASS" ]]; then
+          TOTAL_SCORE=$((TOTAL_SCORE + 15)) # Adjust points as needed
+        fi
+        echo "STM32CubeMX Path Status: ${{ steps.grade_stm32cubemx_path.outputs.stm32cubemx_path_status }}"
+        if [[ "${{ steps.grade_stm32cubemx_path.outputs.stm32cubemx_path_status }}" == "PASS" ]]; then
+          TOTAL_SCORE=$((TOTAL_SCORE + 15)) # Adjust points as needed
+        fi
+
+        echo "VS Code STM32 Extension Status: ${{ steps.grade_vscode_extension.outputs.vscode_extension_status }}"
+        if [[ "${{ steps.grade_vscode_extension.outputs.vscode_extension_status }}" == "PASS" ]]; then
+          TOTAL_SCORE=$((TOTAL_SCORE + 20)) # Adjust points as needed
+        fi
+
+        echo "----------------------"
+        echo "Total Score: $TOTAL_SCORE / 100"
+        echo "----------------------"
+
+        # You can still include the optional job failure logic here if desired
+        if [[ "${{ steps.grade_git_version.outputs.git_version_status }}" == "FAIL" || \
+              "${{ steps.grade_user_name.outputs.user_name_status }}" == "FAIL" || \
+              "${{ steps.grade_user_email.outputs.user_email_status }}" == "FAIL" || \
+              "${{ steps.grade_gcc_version.outputs.gcc_version_status }}" == "FAIL" || \
+              "${{ steps.grade_cmake_version.outputs.cmake_version_status }}" == "FAIL" || \
+              "${{ steps.grade_gdb_version.outputs.gdb_version_status }}" == "FAIL"  || \
+              "${{ steps.grade_stm32clt_path.outputs.stm32clt_path_status }}" == "FAIL" || \
+              "${{ steps.grade_stm32cubemx_path.outputs.stm32cubemx_path_status }}" == "FAIL" || \
+              "${{ steps.grade_vscode_extension.outputs.vscode_extension_status }}" == "FAIL" ]]; then
+          echo "One or more required configuration items were not found. Job failed."
+          exit 1
+        else
+          echo "All required configuration items were found. Job passed."
+        fi
+        
