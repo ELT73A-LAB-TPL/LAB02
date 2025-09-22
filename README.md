@@ -1,4 +1,6 @@
 # LAB02 template for ELT73A course 
+[Create from template](https://ruseleredu.github.io/stm32doc/labs/lab02#crie-um-novo-reposit%C3%B3rio-com-base-no-template-do-lab02)
+
 Opens STM32CubeMX with provided Project Name, Script Name and generate code
 ```bash
 LoadMX BaseScript BaseScript.txt Y
